@@ -1,0 +1,111 @@
+#!/bin/bash
+# Script to create unique userids from a list of user names
+# CS 370, Fall 2012
+
+
+
+
+inputfile=$1
+
+
+
+
+# 0. Remove any temporary files from previous runs of the script.
+#    This is essential during script testing.
+
+
+
+# 1. Create firstn from $inputfile
+
+
+
+# 2. Create lastn from $inputfile with all special characters removed
+
+
+
+# 3. Create first draft userids file from firstn and lastn > ids.1st'.
+#    It contains userids in this format:
+#
+#     jabraham
+#     tabraham
+#     jabraham
+#     jabrams
+#     dabrams
+#     jabrams
+#
+# We want to keep the ids.1st file in the same order as $inpufile
+# since we want to be able to paste the ids file and $inputfile
+# together at some point, like this (after duplicate ids have been
+# dealt with):
+#
+#     Abraham, Jesse :jabraha1
+#     Abrahamsen, Theresa :tabraham
+#     Abrahamson, Jonathan :jabraha2
+#     Abrams, Jenelle :jabrams1
+#     Abrams, Dana :dabrams
+#     Abrams, Jessica :jabrams2
+
+
+
+
+# 4. Create list of the duplicated ids in ids.1st > duplids'.
+#    We'll use duplids as a lookup table.  A portion of duplids is
+#    shown below:
+#
+#     jabraham
+#     tabraham
+#     jabrams
+#     dabrams
+
+
+
+
+# 5. Append userids from ids.1st to ids.2nd.
+#    If a userid is duplicated, attach appropriate numbers to them
+#    and append to ids.2nd.
+#
+#    Here, grep is your friend. But, be sure to do WHOLE WORD grep. 
+#
+#    For each userid in ids.1st,
+#       grep for the userid in duplids from Step 4.
+#
+#       If grep didn't find the userid in duplids, it's unique, so
+#           just append it straightaway to ids.2nd
+#
+#       Else, (if grep did find the userid in duplids)
+#           attach a number to the userid starting at number=1, making
+#           sure the userid remains no more than 8 chars.
+#
+#           grep for the numbered userid in ids.2nd.
+#
+#           If grep finds that the numbered userid is already in
+#           ids.2nd, increment the number by 1, and grep for the new
+#           numbered userid in ids.2nd.  REPEAT until grep does not
+#           find the numbered userid in ids.2nd.
+#
+#           Append the numbered userid to ids.2nd.
+#
+#
+# After this, ids.2nd will look like this (the original order of
+# ids.1st is preserved):
+#
+#     jabraha1
+#     tabraham
+#     jabraha2
+#     jabrams1
+#     dabrams
+#     jabrams2
+
+
+
+
+
+# 6. Double check ids.2nd for any userid duplications.
+#    The same uniq option used to create duplids (step 4) should
+#    work.
+
+
+
+
+
+# 7. Paste ids.2nd to $inputfile > ids.final
