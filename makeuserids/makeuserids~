@@ -12,11 +12,12 @@ inputfile=$1
 rm firstn 
 rm lastn 
 rm ids.1st
+rm ids.2nd
 rm dupids
+rm dupids.2nd
 
 # 1. Create firstn from $inputfile
 
-echo " "
 echo "Extracting 1st letter of first name to firstn "
 echo " "
 cut -d " " -f 2 $inputfile | cut -c 1 | tr A-Z a-z > firstn
@@ -52,7 +53,6 @@ cut -d "," -f 1 $inputfile | sed "s/[^A-Za-z]//g" | cut -c 1-7 | tr A-Z a-z > la
 echo "Creating first draft userids file called ids.1st "
 echo " "
 paste -d "" firstn lastn > ids.1st
-#paste -d ":" p4names.txt ids.temp > ids.1st
 
 # 4. Create list of the duplicated ids in ids.1st > duplids'.
 #    We'll use duplids as a lookup table.  A portion of duplids is
@@ -65,7 +65,6 @@ paste -d "" firstn lastn > ids.1st
 
 echo "Creating a list of duplicate ids from first draft called dupids "
 echo " "
-dupids=$(cat ids.1st | sort | uniq -d | sed "s/\n/ /g")
 cat ids.1st | sort | uniq -d | sed "s/\n/ /g" > dupids
 
 # 5. Append userids from ids.1st to ids.2nd.
@@ -104,30 +103,58 @@ cat ids.1st | sort | uniq -d | sed "s/\n/ /g" > dupids
 #     dabrams
 #     jabrams2
 
-number=1
-for each in ids.1st
+echo "Finding and appending numbers to duplicates in ids.1st and creating ids.2nd "
+oldUser="blank"
+idsChecked=0
+for each in `cat ids.1st`
 do
-	grep $each dupids
-	if [ $? == "1" ]; then
-		paste -d ":" p4names.txt ids.1st > ids.2nd		
-	else
-		sed "s/$each/$each$number/g"
-		paste -d ":" p4names.txt ids.1st > ids.2nd
+	newUser=$(echo $each)
+	if [ $newUser == $oldUser ]; then
 		number=$((number+1))
+	else
+		number=1
 	fi
+
+	if [ $idsChecked -eq 100 ] ; then
+		echo -n "."
+		idsChecked=1
+	fi
+
+	grep -w -q $each dupids
+		if [ $? -eq "1" ]; then
+#		echo "Not a dup"
+		echo $each >> ids.2nd
+		oldUser=$(echo $each)		
+	else
+#		echo "This is a dup"
+		if [ $number -gt 10 ]; then
+#			echo "Double digits"
+			tempUser=$(echo $each | cut -c 1-6)
+			User=$(echo $tempUser$number)
+			echo $User >> ids.2nd
+			oldUser=$(echo $each)
+		else
+#			echo "Single digits"
+			tempUser=$(echo $each | cut -c 1-7)
+			User=$(echo $tempUser$number)
+			echo $User >> ids.2nd
+			oldUser=$(echo $each)
+		fi
+	fi
+	idsChecked=$((idsChecked+1))
 done
-
-#paste -d ":" p4names.txt ids.temp > ids.1st
-
-
 
 # 6. Double check ids.2nd for any userid duplications.
 #    The same uniq option used to create duplids (step 4) should
 #    work.
 
+echo " "
+echo "Double checking ids.2nd for any duplicates "
+echo " "
+cat ids.2nd | sort | uniq -d | sed "s/\n/ /g" > dupids.2nd
 
-
-
+echo "Finding and fixing any remaining duplicates "
+echo " "
 
 # 7. Paste ids.2nd to $inputfile > ids.final
 
