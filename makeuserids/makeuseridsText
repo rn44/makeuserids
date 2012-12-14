@@ -9,24 +9,15 @@ inputfile=$1
 # 0. Remove any temporary files from previous runs of the script.
 #    This is essential during script testing.
 
-rm firstn 
-rm lastn 
-rm ids.1st
-rm ids.2nd
-rm dupids
-rm dupids.2nd
-rm ids.final
-
 # 1. Create firstn from $inputfile
 
-echo "Extracting 1st letter of first name to firstn "
-echo " "
+echo "1. Extracting 1st letter of first name to firstn "
 cut -d " " -f 2 $inputfile | cut -c 1 | tr A-Z a-z > firstn
 
 # 2. Create lastn from $inputfile with all special characters removed
 
-echo "Removing special characters and extracting up to 7 letters of a user's last name from input file to lastn "
-echo " "
+echo "2. Removing special characters and extracting up to 7 letters"
+echo " of a user's last name from input file to lastn "
 cut -d "," -f 1 $inputfile | sed "s/[^A-Za-z]//g" | cut -c 1-7 | tr A-Z a-z > lastn
 
 # 3. Create first draft userids file from firstn and lastn > ids.1st'.
@@ -51,8 +42,7 @@ cut -d "," -f 1 $inputfile | sed "s/[^A-Za-z]//g" | cut -c 1-7 | tr A-Z a-z > la
 #     Abrams, Dana :dabrams
 #     Abrams, Jessica :jabrams2
 
-echo "Creating first draft userids file called ids.1st "
-echo " "
+echo "3. Creating first draft userids file called ids.1st "
 paste -d "" firstn lastn > ids.1st
 
 # 4. Create list of the duplicated ids in ids.1st > duplids'.
@@ -64,8 +54,7 @@ paste -d "" firstn lastn > ids.1st
 #     jabrams
 #     dabrams
 
-echo "Creating a list of duplicate ids from first draft called dupids "
-echo " "
+echo "4. Creating a list of duplicate ids from first draft called dupids "
 cat ids.1st | sort | uniq -d | sed "s/\n/ /g" > dupids
 
 # 5. Append userids from ids.1st to ids.2nd.
@@ -104,7 +93,7 @@ cat ids.1st | sort | uniq -d | sed "s/\n/ /g" > dupids
 #     dabrams
 #     jabrams2
 
-echo "Finding and appending numbers to duplicates in ids.1st and creating ids.2nd "
+echo "5. Finding and appending numbers to duplicates in ids.1st and creating ids.2nd "
 oldUser="blank"
 idsChecked=0
 number=1
@@ -129,30 +118,49 @@ do
 		oldUser=$(echo $each)		
 	else
 #		echo "This is a dup"
-		if [ $number -gt 10 ]; then
+		if [ $number -gt 9 ]; then
 #			echo "Double digits"
 			tempUser=$(echo $each | cut -c 1-6)
-			User=$(echo $tempUser$number)
+			tempID=$(echo $tempUser$number)
 
-#			grep -w -q $User ids.2nd
-#				if [ $? -eq "1" ]; then
-#					echo "Not a dup"
-#					echo $User >> ids.2nd
-#					oldUser=$(echo $each)
-#				else
-				
+			grep -w -q $tempID ids.2nd
+			if [ $? -eq "0" ]; then
+				while [ $? -eq "0" ] 
+				do
+					number=$((number+1))
+					tempID=$(echo $tempUser$number)
+					grep -w -q $tempID ids.2nd
+				done
+				echo $tempID >> ids.2nd
+			else
+				echo $tempID >> ids.2nd
+			fi
 
-			echo $User >> ids.2nd
 			oldUser=$(echo $each)
 		else
 #			echo "Single digits"
 			tempUser=$(echo $each | cut -c 1-7)
-			User=$(echo $tempUser$number)
-			echo $User >> ids.2nd
+			tempID=$(echo $tempUser$number)
+
+			grep -w -q $tempID ids.2nd
+			if [ $? -eq "0" ]; then
+				while [ $? -eq "0" ] 
+				do
+					number=$((number+1))
+					tempID=$(echo $tempUser$number)
+					grep -w -q $tempID ids.2nd
+				done
+				echo $tempID >> ids.2nd
+			else
+				echo $tempID >> ids.2nd
+			fi
+
 			oldUser=$(echo $each)
 		fi
 	fi
+
 	idsChecked=$((idsChecked+1))
+
 done
 
 # 6. Double check ids.2nd for any userid duplications.
@@ -160,16 +168,19 @@ done
 #    work.
 
 echo " "
-echo "Double checking ids.2nd for any duplicates "
-echo " "
+echo "6. Double checking ids.2nd for any duplicates "
 cat ids.2nd | sort | uniq -d | sed "s/\n/ /g" > dupids.2nd
-
-echo "Finding and fixing any remaining duplicates "
-echo " "
 
 # 7. Paste ids.2nd to $inputfile > ids.final
 
+echo "7. Creating final file called ids.final and removing temporary files"
 paste -d ":" $inputfile ids.2nd > ids.final
+rm firstn 
+rm lastn 
+rm ids.1st
+rm ids.2nd
+rm dupids
+rm dupids.2nd
 echo "Done "
 
 

@@ -15,6 +15,7 @@ rm ids.1st
 rm ids.2nd
 rm dupids
 rm dupids.2nd
+rm ids.final
 
 # 1. Create firstn from $inputfile
 
@@ -106,6 +107,7 @@ cat ids.1st | sort | uniq -d | sed "s/\n/ /g" > dupids
 echo "Finding and appending numbers to duplicates in ids.1st and creating ids.2nd "
 oldUser="blank"
 idsChecked=0
+number=1
 for each in `cat ids.1st`
 do
 	newUser=$(echo $each)
@@ -121,7 +123,7 @@ do
 	fi
 
 	grep -w -q $each dupids
-		if [ $? -eq "1" ]; then
+	if [ $? -eq "1" ]; then
 #		echo "Not a dup"
 		echo $each >> ids.2nd
 		oldUser=$(echo $each)		
@@ -158,6 +160,8 @@ echo " "
 
 # 7. Paste ids.2nd to $inputfile > ids.final
 
+paste -d ":" $inputfile ids.2nd > ids.final
+echo "Done "
 
 
 
