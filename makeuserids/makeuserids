@@ -155,8 +155,9 @@ echo "Double checking ids.2nd for any duplicates "
 echo " "
 cat ids.2nd | sort | uniq -d | sed "s/\n/ /g" > dupids.2nd
 
-echo "Finding and fixing any remaining duplicates "
-echo " "
+if [[ -s dupids.2nd ]]; then
+	echo "It seems not all duplicates have been removed"
+fi
 
 # 7. Paste ids.2nd to $inputfile > ids.final
 

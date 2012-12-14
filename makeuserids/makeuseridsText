@@ -12,7 +12,7 @@ inputfile=$1
 # 1. Create firstn from $inputfile
 
 echo " "
-echo "1. Extracting 1st letter of first name to firstn "
+echo "1. Extracting first letter of first name to firstn "
 echo " "
 cut -d " " -f 2 $inputfile | cut -c 1 | tr A-Z a-z > firstn
 
@@ -45,7 +45,7 @@ cut -d "," -f 1 $inputfile | sed "s/[^A-Za-z]//g" | cut -c 1-7 | tr A-Z a-z > la
 #     Abrams, Dana :dabrams
 #     Abrams, Jessica :jabrams2
 
-echo "3. Creating first draft userids file called ids.1st "
+echo "3. Creating a first draft userids to a file called ids.1st "
 echo " "
 paste -d "" firstn lastn > ids.1st
 
@@ -58,7 +58,7 @@ paste -d "" firstn lastn > ids.1st
 #     jabrams
 #     dabrams
 
-echo "4. Creating a list of duplicate ids from first draft called dupids "
+echo "4. Creating a list of duplicate ids from the first draft called dupids "
 echo " "
 cat ids.1st | sort | uniq -d | sed "s/\n/ /g" > dupids
 
@@ -177,8 +177,10 @@ echo " "
 echo "6. Double checking ids.2nd for any duplicates "
 echo " "
 cat ids.2nd | sort | uniq -d | sed "s/\n/ /g" > dupids.2nd
-echo "The following ids have been duplicated :"
-cat dupids.2nd
+
+if [[ -s dupids.2nd ]]; then
+	echo "It seems not all duplicates have been removed"
+fi
 
 # 7. Paste ids.2nd to $inputfile > ids.final
 

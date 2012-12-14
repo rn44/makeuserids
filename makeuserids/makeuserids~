@@ -133,15 +133,6 @@ do
 #			echo "Double digits"
 			tempUser=$(echo $each | cut -c 1-6)
 			User=$(echo $tempUser$number)
-
-#			grep -w -q $User ids.2nd
-#				if [ $? -eq "1" ]; then
-#					echo "Not a dup"
-#					echo $User >> ids.2nd
-#					oldUser=$(echo $each)
-#				else
-				
-
 			echo $User >> ids.2nd
 			oldUser=$(echo $each)
 		else
